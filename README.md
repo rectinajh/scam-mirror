@@ -17,31 +17,47 @@ Cyber-fruit-fly truth swarm: a user hands over a suspicious callback number or a
 published official hotline and the suspect number, compare their stories, and
 emit only a trust verdict and evidence hashes.
 
-## The problem
+## Background (背景)
 
-"This is the police/bank/courier, please call back this number." A normal person
-cannot quickly verify that claim. Voice is an analog hole that a webpage cannot
-polish away, and a scam lives or dies on what the caller says. Scam Mirror turns
-that verification into one reproducible agent workflow.
+Callback scams — "this is your bank / police / courier, please call back this
+number" — weaponize the one channel people still instinctively trust: a live
+phone call. A fake webpage can be spotted, but a confident voice on a spoofed
+number is hard for a non-specialist to challenge. The institutions being
+impersonated publish real hotlines; the problem is that nobody calls both sides
+and compares what they say.
 
-## Philosophy
+CALL-E changes that equation: an agent can now place real outbound calls, so
+verification stops being "search the number on a forum" and becomes a
+reproducible, evidence-backed workflow.
 
-- **Cyber-fruit-fly**: flies are short-lived, replaceable, and disposable. They
-  can rotate numbers and scripts, then burn out instead of becoming a spammer.
-- **Cypherpunk minimal disclosure**: no real names, no IDs, no bank cards. Logs
-  contain only the verdict, a summary, and a content hash.
-- **No single source of truth**: the official page, the official line, and the
-  call summaries are cross-checked.
+## Core problem (核心问题)
 
-## How it works
+When a person receives a suspicious callback or an "official" caller-ID claim,
+there is no fast, trusted way to answer one question: is this number really the
+organization it claims to be? The usual options are slow (hold queues), noisy
+(forum threads), or inconclusive (a web search that cannot hear the caller's
+script).
+
+## What problem it solves (解决什么问题)
+
+Scam Mirror turns that verification into a single agent run:
+
+- It dials the published official line and the suspect line, and compares what
+  each actually says.
+- It returns `likely_legit | likely_scam | inconclusive` with confidence,
+  signals, and evidence hashes instead of a gut feeling.
+- It does this while collecting no identity and storing no full recording.
+
+## How it solves (如何解决)
 
 1. **Input** — suspect number, claimed organization, optional script details and
    region.
 2. **Resolve the official contact** — look up the published hotline from
    `orgs.whitelist.json` (or a user-supplied official number).
-3. **Release the flies**
-   - **Fly-A (official)**: dials the official hotline and asks, in minimal words,
-     whether a "callback / case / freeze" flow actually exists for that number.
+3. **Release two flies**
+   - **Fly-A (official)**: dials the official hotline and asks, in minimal
+     words, whether a "callback / case / freeze" flow actually exists for that
+     number.
    - **Fly-B (suspect)**: dials the suspect number and records red flags such as
      requests for codes, transfers, remote control, or threats.
    - Both flies carry a TTL, a max call length, and a kill switch (any request
@@ -50,6 +66,20 @@ that verification into one reproducible agent workflow.
    comparison) produce `likely_legit | likely_scam | inconclusive`.
 5. **Emit a JSON attestation** — verdict, confidence, signals, per-fly summary,
    and content hashes. Optionally push to a webhook or write to `results/`.
+
+## Innovations (创新点)
+
+- **Cyber-fruit-fly**: verification flies are short-lived, replaceable, and
+  disposable. They can rotate numbers and scripts, then burn out instead of
+  becoming a spammer.
+- **Cypherpunk minimal disclosure**: no real names, no IDs, no bank cards. Logs
+  contain only the verdict, a summary, and a content hash — not full recordings.
+- **The analog hole, used defensively**: instead of trusting one caller, the
+  project forces the story to survive a live comparison against the official
+  line's own spoken answer.
+- **No single source of truth**: the official page, the official line, and the
+  call summaries are cross-checked; a wrong whitelist entry degrades to
+  `inconclusive`, not a false accusation.
 
 ## Repo layout
 
@@ -178,4 +208,3 @@ See `skills/scam-mirror/references/safety.md` for the full safety contract.
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
