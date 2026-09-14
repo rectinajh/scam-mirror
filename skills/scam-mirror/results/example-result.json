@@ -43,7 +43,7 @@
         "vfb_id": "VFB_jrmc30my",
         "superclass": "descending_neuron",
         "dataset": "male-cns:v1.0",
-        "license": "CC-BY 4.0"
+    "license": "CC-BY"
       }
     },
     {
@@ -57,7 +57,7 @@
         "vfb_id": "VFB_jrmc37gy",
         "class": "ALPN",
         "dataset": "male-cns:v1.0",
-        "license": "CC-BY 4.0"
+    "license": "CC-BY"
       }
     }
   ]

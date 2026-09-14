@@ -84,7 +84,7 @@ Scam Mirror turns that verification into a single agent run:
 ## Real cyber-fruit-fly grounding (真实的赛博果蝇)
 
 The flies are not just a metaphor. Each persona is anchored to a real neuron in
-the **male Drosophila CNS connectome** (FlyEM / HHMI Janelia, CC-BY 4.0), about
+  the **male Drosophila CNS connectome** (FlyEM / HHMI Janelia, CC-BY), about
 166,000 neurons and 125 million synapses:
 
 - Fly-A (official verifier) → **Giant Fiber (DNp01)**, the escape-command neuron.
