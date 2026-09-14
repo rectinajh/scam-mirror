@@ -245,6 +245,8 @@ See `skills/scam-mirror/references/safety.md` for the full safety contract.
 - [PRD.md](PRD.md) — product requirements and demo storyboard
 - [docs/TECHNICAL.md](docs/TECHNICAL.md) — architecture, CALL-E integration,
   schema, and extension points
+- [docs/demo-video-outline.md](docs/demo-video-outline.md) — 3-minute Devpost demo
+  outline
 
 ## License
 
