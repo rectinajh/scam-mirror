@@ -70,6 +70,22 @@ first.
     "reached": true,
     "red_flags": ["asks_for_otp", "demands_secrecy"],
     "content_hash": "sha256..."
-  }
+  },
+  "flies": [
+    {
+      "id": "A",
+      "generation": 1,
+      "ttl_hours": 1,
+      "persona_id": "giant-fiber",
+      "persona": { "cell_type": "DNp01", "body_id": 10001, "vfb_id": "VFB_jrmc30my" }
+    },
+    {
+      "id": "B",
+      "generation": 1,
+      "ttl_hours": 1,
+      "persona_id": "da1-olfactory-pn",
+      "persona": { "cell_type": "DA1_lPN", "body_id": 10075, "vfb_id": "VFB_jrmc37gy" }
+    }
+  ]
 }
 ```

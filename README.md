@@ -81,6 +81,26 @@ Scam Mirror turns that verification into a single agent run:
   call summaries are cross-checked; a wrong whitelist entry degrades to
   `inconclusive`, not a false accusation.
 
+## Real cyber-fruit-fly grounding (真实的赛博果蝇)
+
+The flies are not just a metaphor. Each persona is anchored to a real neuron in
+the **male Drosophila CNS connectome** (FlyEM / HHMI Janelia, CC-BY 4.0), about
+166,000 neurons and 125 million synapses:
+
+- Fly-A (official verifier) → **Giant Fiber (DNp01)**, the escape-command neuron.
+- Fly-B (suspect probe) → **DA1_lPN**, a pheromone-detecting olfactory
+  projection neuron.
+- Reserve persona → **MBON11**, a mushroom-body output neuron for learned
+  avoidance.
+
+The mapping, with real `body_id`, cell type, and Virtual Fly Brain `vfb_id`, is
+in `skills/scam-mirror/flies.registry.json` and is embedded in every
+attestation's `flies[].persona`.
+
+Source: <https://male-cns.janelia.org/download/>
+Citation: "Sexual dimorphism in the complete Drosophila male central nervous
+system connectome" (FlyEM, 2026).
+
 ## Repo layout
 
 ```text
@@ -93,6 +113,7 @@ Scam Mirror turns that verification into a single agent run:
     ├── references/safety.md
     ├── references/examples.md
     ├── scripts/run_dual_fly.py   # runnable CLI
+    ├── flies.registry.json       # real Male CNS connectome neuron personas
     ├── .env.example
     ├── orgs.whitelist.json
     └── results/example-result.json

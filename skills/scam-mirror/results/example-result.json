@@ -1,5 +1,5 @@
 {
-  "case_id": "SM-20260914100324-d5ef7f",
+  "case_id": "SM-20260914102241-d5ef7f",
   "suspect_number": "+1 555 010 0100",
   "claimed_org": "Example Bank",
   "verdict": "likely_scam",
@@ -26,8 +26,8 @@
     "content_hash": "891a35b209708b64b432ac9795f35e5fa5551f84f66bb5ee4f1a5a337c740dbc"
   },
   "attestation": {
-    "timestamp": "2026-09-14T10:03:24Z",
-    "verdict_hash": "109452bec26da431a5edbe5c4f26fa81a851ef95224ba0b13d4eae1c275539c9",
+    "timestamp": "2026-09-14T10:22:41Z",
+    "verdict_hash": "ea9fe93100ce69379f926e9d1521fb127dbe43d6539c940002fba249e18d702b",
     "note": "Suspect line used high-risk requests; treat as a scam and do not comply."
   },
   "flies": [
@@ -35,13 +35,30 @@
       "id": "A",
       "generation": 1,
       "ttl_hours": 1,
-      "persona_id": "official-verifier-v1"
+      "persona_id": "giant-fiber",
+      "persona": {
+        "cell_type": "DNp01",
+        "hemibrain_type": "Giant Fiber",
+        "body_id": 10001,
+        "vfb_id": "VFB_jrmc30my",
+        "superclass": "descending_neuron",
+        "dataset": "male-cns:v1.0",
+        "license": "CC-BY 4.0"
+      }
     },
     {
       "id": "B",
       "generation": 1,
       "ttl_hours": 1,
-      "persona_id": "suspect-probe-v1"
+      "persona_id": "da1-olfactory-pn",
+      "persona": {
+        "cell_type": "DA1_lPN",
+        "body_id": 10075,
+        "vfb_id": "VFB_jrmc37gy",
+        "class": "ALPN",
+        "dataset": "male-cns:v1.0",
+        "license": "CC-BY 4.0"
+      }
     }
   ]
 }

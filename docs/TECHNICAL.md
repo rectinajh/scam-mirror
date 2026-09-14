@@ -25,11 +25,13 @@ directly over HTTPS.
 - `scripts/run_dual_fly.py` — argument parsing, orchestration, output.
 - Whitelist resolver — loads `orgs.whitelist.json`, matches the claimed org by
   name or alias, picks the official number for the region.
-- CALL-E client — `POST /v1/calls`, then polls `GET /v1/calls/{call_id}` until a
-  terminal status.
+- CALL-E client — drives the `@call-e/cli` plan/start/status flow, or the REST
+  `/v1/calls` API with `--backend rest`.
 - Verdict engine — normalization, red-flag detection, and rule-based
   disposition.
 - Attestation builder — hashes content, assembles the required JSON schema.
+- Persona registry — loads `flies.registry.json`, grounding each fly in a real
+  Male CNS connectome neuron (`body_id`, cell type, `vfb_id`).
 
 ## 3. CALL-E integration
 

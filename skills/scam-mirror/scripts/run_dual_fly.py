@@ -36,6 +36,7 @@ from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 WHITELIST_PATH = SKILL_ROOT / "orgs.whitelist.json"
+REGISTRY_PATH = SKILL_ROOT / "flies.registry.json"
 RESULTS_DIR = SKILL_ROOT / "results"
 
 CALLE_BASE_URL = os.environ.get("CALLE_BASE_URL", "https://api.heycall-e.com")
@@ -47,6 +48,8 @@ TERMINAL_STATUSES = {
     "COMPLETED", "FAILED", "NO_ANSWER", "DECLINED",
     "CANCELED", "CANCELLED", "VOICEMAIL", "BUSY", "EXPIRED",
 }
+
+DEFAULT_PERSONAS = {"official_verifier": "official-verifier-v1", "suspect_probe": "suspect-probe-v1"}
 
 # Each red-flag rule: (flag_id, human label, keyword fragments).
 RED_FLAG_RULES = [
@@ -393,7 +396,40 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def build_attestation(org_name, official_number, official, suspect, verdict) -> dict:
+def load_registry(path: Path = REGISTRY_PATH) -> dict:
+    if not path.exists():
+        return {}
+    with path.open("r", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def persona_for_role(registry: dict, role: str) -> dict:
+    for persona in registry.get("personas", []):
+        if persona.get("role") == role:
+            return persona
+    return {}
+
+
+def fly_entry(registry: dict, fly_id: str, role: str) -> dict:
+    persona = persona_for_role(registry, role)
+    entry = {"id": fly_id, "generation": 1, "ttl_hours": 1}
+    if not persona:
+        entry["persona_id"] = DEFAULT_PERSONAS[role]
+        return entry
+
+    entry["persona_id"] = persona.get("persona_id", f"{role}-v1")
+    persona_fields = {
+        k: persona.get(k)
+        for k in ("cell_type", "hemibrain_type", "body_id", "vfb_id", "superclass", "class")
+    }
+    persona_fields = {k: v for k, v in persona_fields.items() if v is not None}
+    persona_fields["dataset"] = registry.get("dataset")
+    persona_fields["license"] = registry.get("license")
+    entry["persona"] = persona_fields
+    return entry
+
+
+def build_attestation(org_name, official_number, official, suspect, verdict, registry) -> dict:
     case_id = (
         "SM-"
         + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
@@ -447,8 +483,8 @@ def build_attestation(org_name, official_number, official, suspect, verdict) -> 
             "note": note,
         },
         "flies": [
-            {"id": "A", "generation": 1, "ttl_hours": 1, "persona_id": "official-verifier-v1"},
-            {"id": "B", "generation": 1, "ttl_hours": 1, "persona_id": "suspect-probe-v1"},
+            fly_entry(registry, "A", "official_verifier"),
+            fly_entry(registry, "B", "suspect_probe"),
         ],
     }
 
@@ -494,8 +530,9 @@ def main(argv=None) -> int:
     official = run_fly("official", official_number, org_name, args.region, args.number, args.backend)
     suspect = run_fly("suspect", args.number, org_name, args.region, args.number, args.backend)
 
+    registry = load_registry()
     verdict = build_verdict(official, suspect, args.number, official_number)
-    attestation = build_attestation(org_name, official_number, official, suspect, verdict)
+    attestation = build_attestation(org_name, official_number, official, suspect, verdict, registry)
 
     out = Path(args.out) if args.out else RESULTS_DIR / f"{attestation['case_id']}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
