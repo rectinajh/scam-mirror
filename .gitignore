@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Environment / secrets
+.env
+
+# Live results (keep only the example fixture)
+skills/scam-mirror/results/*.json
+!skills/scam-mirror/results/example-result.json
+
+# OS
+.DS_Store
+
