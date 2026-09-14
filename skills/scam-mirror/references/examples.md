@@ -12,6 +12,18 @@ The fixture makes the suspect fly detect `asks_for_otp` and `demands_secrecy`,
 so the verdict is `likely_scam`. Output is printed to stdout and written to
 `results/`.
 
+## Plan only (no dial)
+
+```bash
+python3 scripts/run_dual_fly.py \
+  --number "+1 555 010 0100" \
+  --org "Example Bank" \
+  --plan
+```
+
+`--plan` drafts both fly plans through the real CALL-E service and prints
+`plan_id`, `ready_to_run`, and any clarifying questions without placing a call.
+
 ## Override the official number
 
 ```bash

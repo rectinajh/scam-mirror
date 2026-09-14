@@ -266,6 +266,23 @@ def cli_call_start(goal: str, phone: str, region: str) -> tuple[str, dict]:
     return run_id, _structured(env, "status_result")
 
 
+def cli_call_plan(goal: str, phone: str, region: str) -> dict:
+    args = ["call", "plan", "--to-phone", phone, "--goal", goal]
+    if region:
+        args += ["--region", region]
+    env = calle_cli(args, timeout=240)
+    return _structured(env, "result")
+
+
+def safe_plan_summary(plan: dict) -> dict:
+    return {
+        "plan_id": plan.get("plan_id"),
+        "ready_to_run": plan.get("ready_to_run"),
+        "clarifying_questions": plan.get("clarifying_questions", []),
+        "display_goal": plan.get("display_goal"),
+    }
+
+
 def cli_call_status(run_id: str) -> dict:
     return _structured(calle_cli(["call", "status", "--run-id", run_id]), "result")
 
@@ -499,6 +516,7 @@ def parse_args(argv):
     p.add_argument("--out", default=None, help="Write the attestation to this path instead of the default results dir.")
     p.add_argument("--backend", choices=["dry", "cli", "rest"], default="dry",
                    help="dry-run (default) or live transport (cli / rest).")
+    p.add_argument("--plan", action="store_true", help="Draft both fly plans through CALL-E without dialing.")
     p.add_argument("--live", action="store_true", help="Place real calls; implies --backend cli unless set.")
     return p.parse_args(argv)
 
@@ -526,6 +544,22 @@ def main(argv=None) -> int:
             file=sys.stderr,
         )
         return 2
+
+    if args.plan:
+        official_goal = build_task("official", org_name, official_number, args.number)
+        suspect_goal = build_task("suspect", org_name, args.number, args.number)
+        plans = {
+            "official_fly": {
+                "number": official_number,
+                **safe_plan_summary(cli_call_plan(official_goal, official_number, args.region)),
+            },
+            "suspect_fly": {
+                "number": args.number,
+                **safe_plan_summary(cli_call_plan(suspect_goal, args.number, args.region)),
+            },
+        }
+        print(json.dumps(plans, indent=2, ensure_ascii=False))
+        return 0
 
     official = run_fly("official", official_number, org_name, args.region, args.number, args.backend)
     suspect = run_fly("suspect", args.number, org_name, args.region, args.number, args.backend)
