@@ -11,7 +11,7 @@ Drosophila connectome neurons.
 
 ### 0:00-0:20 — Hook
 
-- Title card: **Scam Mirror (骗局镜面)**.
+- Title card: **Scam Mirror**.
 - One line: "Use the official analog hole to hold up a mirror to the scam."
 - Show [assets/cyber-flies.png](../assets/cyber-flies.png) (real neuron render).
 
@@ -46,7 +46,7 @@ Drosophila connectome neurons.
 
 ### 2:45-3:00 — Close
 
-- Closing line: "用官方模拟漏洞，照出骗局镜面。"
+- Closing line: "Use the official analog hole to hold up a mirror to the scam."
 - Call to action: GitHub repo, PR, and the attestation schema.
 
 ## Capture list
@@ -63,4 +63,3 @@ Drosophila connectome neurons.
 2. "Scam Mirror calls both sides of the story and compares what they actually say."
 3. "The flies are named after real neurons in the male fruit fly connectome."
 4. "It stores the verdict and a hash, not your identity or the recording."
-

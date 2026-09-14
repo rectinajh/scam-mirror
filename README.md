@@ -1,4 +1,4 @@
-# Scam Mirror (骗局镜面)
+# Scam Mirror
 
 A CALL-E powered **dual-fly verifier** for suspected callback scams. Drop in a
 suspicious "call this number back" number and the organization it claims to be,
@@ -7,8 +7,7 @@ official line, the other probes the suspect line. It compares what each one
 actually says and returns a verdict plus an evidence hash. No identity data is
 collected, and full recordings are not stored.
 
-> 用官方模拟漏洞，照出骗局镜面。 — Use the official analog hole to hold up a
-> mirror to the scam.
+> Use the official analog hole to hold up a mirror to the scam.
 
 ## One-liner
 
@@ -17,7 +16,7 @@ Cyber-fruit-fly truth swarm: a user hands over a suspicious callback number or a
 published official hotline and the suspect number, compare their stories, and
 emit only a trust verdict and evidence hashes.
 
-## Background (背景)
+## Background
 
 Callback scams — "this is your bank / police / courier, please call back this
 number" — weaponize the one channel people still instinctively trust: a live
@@ -30,7 +29,7 @@ CALL-E changes that equation: an agent can now place real outbound calls, so
 verification stops being "search the number on a forum" and becomes a
 reproducible, evidence-backed workflow.
 
-## Core problem (核心问题)
+## Core problem
 
 When a person receives a suspicious callback or an "official" caller-ID claim,
 there is no fast, trusted way to answer one question: is this number really the
@@ -38,7 +37,7 @@ organization it claims to be? The usual options are slow (hold queues), noisy
 (forum threads), or inconclusive (a web search that cannot hear the caller's
 script).
 
-## What problem it solves (解决什么问题)
+## What problem it solves
 
 Scam Mirror turns that verification into a single agent run:
 
@@ -48,7 +47,7 @@ Scam Mirror turns that verification into a single agent run:
   signals, and evidence hashes instead of a gut feeling.
 - It does this while collecting no identity and storing no full recording.
 
-## How it solves (如何解决)
+## How it solves
 
 1. **Input** — suspect number, claimed organization, optional script details and
    region.
@@ -67,7 +66,7 @@ Scam Mirror turns that verification into a single agent run:
 5. **Emit a JSON attestation** — verdict, confidence, signals, per-fly summary,
    and content hashes. Optionally push to a webhook or write to `results/`.
 
-## Innovations (创新点)
+## Innovations
 
 - **Cyber-fruit-fly**: verification flies are short-lived, replaceable, and
   disposable. They can rotate numbers and scripts, then burn out instead of
@@ -81,7 +80,7 @@ Scam Mirror turns that verification into a single agent run:
   call summaries are cross-checked; a wrong whitelist entry degrades to
   `inconclusive`, not a false accusation.
 
-## Real cyber-fruit-fly grounding (真实的赛博果蝇)
+## Real cyber-fruit-fly grounding
 
 The flies are not just a metaphor. Each persona is anchored to a real neuron in
 the **male Drosophila CNS connectome** (FlyEM / HHMI Janelia, CC-BY), about
