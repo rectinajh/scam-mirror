@@ -55,6 +55,8 @@ Terminal statuses are `COMPLETED`, `FAILED`, `NO_ANSWER`, `DECLINED`,
 browser OAuth (`calle auth login`); no API key is needed for the CLI path. The
 CLI does not accept a result schema, so `confirmed_business` and `red_flags`
 are derived from the returned summary and transcript.
+Supported regions are published by CALL-E (22 countries as of Sep 2026). China
+is not currently callable; Mandarin Chinese is available via Malaysia (+60).
 
 ### 3.1 REST API (`--backend rest`)
 

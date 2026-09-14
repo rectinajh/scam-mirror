@@ -171,6 +171,14 @@ path is also available with `--backend rest` plus `CALLE_API_KEY` (see
 `.env.example`). Real calls are side effects; only run them for a verification
 you personally initiated.
 
+### Supported regions
+
+CALL-E currently supports 22 countries (US, CA, AU, GB, SG, MY, JP, IN, and
+more). China (+86) is **not** supported yet. For a Mandarin-Chinese scenario,
+the closest supported option is Malaysia (+60) with Mandarin Chinese. See the
+[CALL-E README](https://github.com/CALLE-AI/call-e-integrations#supported-regions-and-languages)
+for the full list.
+
 ## Official number configuration
 
 `orgs.whitelist.json` maps organizations to published hotlines by region:
