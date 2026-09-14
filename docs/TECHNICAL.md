@@ -33,10 +33,28 @@ directly over HTTPS.
 
 ## 3. CALL-E integration
 
-The primary path is the **Developer API**. The project is compatible with the
-other CALL-E surfaces, documented here for portability.
+The live CLI backend (`--backend cli`) uses the official `@call-e/cli` plan →
+run → status workflow over the MCP endpoint. A Developer API path
+(`--backend rest`) and the SDKs are documented for portability.
 
-### 3.1 REST API (used by the CLI)
+### 3.0 CLI (`--backend cli`, default for `--live`)
+
+The CLI is pinned in `skills/scam-mirror/scripts/package.json` and drives the
+three MCP tools:
+
+| Command | MCP tool | Effect |
+| --- | --- | --- |
+| `calle call plan --to-phone X --goal "..."` | `plan_call` | Build a plan; no call. Returns `plan_id` + `confirm_token`. |
+| `calle call start --to-phone X --goal "..."` | `plan_call` + `run_call` | Plan and start a real call; returns `run_id` + status. |
+| `calle call status --run-id Y` | `get_call_run` | Poll progress until a terminal status. |
+
+Terminal statuses are `COMPLETED`, `FAILED`, `NO_ANSWER`, `DECLINED`,
+`CANCELED`, `CANCELLED`, `VOICEMAIL`, `BUSY`, and `EXPIRED`. Authentication is
+browser OAuth (`calle auth login`); no API key is needed for the CLI path. The
+CLI does not accept a result schema, so `confirmed_business` and `red_flags`
+are derived from the returned summary and transcript.
+
+### 3.1 REST API (`--backend rest`)
 
 Credentials:
 

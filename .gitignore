@@ -4,6 +4,9 @@ __pycache__/
 .venv/
 venv/
 
+# Node / CALL-E CLI
+node_modules/
+
 # Environment / secrets
 .env
 
@@ -13,4 +16,3 @@ skills/scam-mirror/results/*.json
 
 # OS
 .DS_Store
-

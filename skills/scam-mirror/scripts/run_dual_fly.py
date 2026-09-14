@@ -26,6 +26,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -39,6 +40,13 @@ RESULTS_DIR = SKILL_ROOT / "results"
 
 CALLE_BASE_URL = os.environ.get("CALLE_BASE_URL", "https://api.heycall-e.com")
 CALLE_API_KEY = os.environ.get("CALLE_API_KEY", "")
+
+CALLE_BIN = SKILL_ROOT / "scripts" / "node_modules" / ".bin" / "calle"
+
+TERMINAL_STATUSES = {
+    "COMPLETED", "FAILED", "NO_ANSWER", "DECLINED",
+    "CANCELED", "CANCELLED", "VOICEMAIL", "BUSY", "EXPIRED",
+}
 
 # Each red-flag rule: (flag_id, human label, keyword fragments).
 RED_FLAG_RULES = [
@@ -221,6 +229,93 @@ def parse_live_result(raw: dict, kind: str) -> dict:
     }
 
 
+def calle_cli(args: list[str], timeout: int = 180) -> dict:
+    if not CALLE_BIN.exists():
+        raise RuntimeError(
+            "CALL-E CLI not found. Run `npm install` in skills/scam-mirror/scripts."
+        )
+    proc = subprocess.run(
+        [str(CALLE_BIN), *args], capture_output=True, text=True, timeout=timeout
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(f"calle {' '.join(args)} failed: {proc.stderr.strip()}")
+    return json.loads(proc.stdout)
+
+
+def _structured(env: dict, key: str) -> dict:
+    node = env.get(key)
+    if not isinstance(node, dict):
+        node = env.get("result")
+    if not isinstance(node, dict):
+        return {}
+    sc = node.get("structuredContent")
+    return sc if isinstance(sc, dict) else {}
+
+
+def cli_call_start(goal: str, phone: str, region: str) -> tuple[str, dict]:
+    args = ["call", "start", "--to-phone", phone, "--goal", goal]
+    if region:
+        args += ["--region", region]
+    env = calle_cli(args, timeout=240)
+    run_id = env.get("run_id")
+    if not run_id:
+        raise RuntimeError(f"calle call start returned no run_id: {env}")
+    return run_id, _structured(env, "status_result")
+
+
+def cli_call_status(run_id: str) -> dict:
+    return _structured(calle_cli(["call", "status", "--run-id", run_id]), "result")
+
+
+def poll_cli(run_id: str, sc: dict) -> dict:
+    for _ in range(54):  # ~9 minutes at 10-second intervals
+        status = (sc.get("status") or "").upper()
+        if status in TERMINAL_STATUSES:
+            return sc
+        time.sleep(10)
+        sc = cli_call_status(run_id)
+    return sc
+
+
+def transcript_from_sc(sc: dict) -> list[dict]:
+    raw = sc.get("transcript")
+    if isinstance(raw, str):
+        return [{"speaker": "user", "text": raw}]
+    if isinstance(raw, list):
+        return [t for t in raw if isinstance(t, dict)]
+    return []
+
+
+def derive_confirmed(text: str) -> str:
+    lowered = text.lower()
+    if re.search(r"\b(?:no|never|not|don'?t|does not|do not|we do not)\b", lowered):
+        return "no"
+    if re.search(r"\b(?:yes|confirmed|correct|we do|we run|we offer)\b", lowered):
+        return "yes"
+    return "unknown"
+
+
+def parse_cli_result(sc: dict, kind: str) -> dict:
+    status = (sc.get("status") or "").upper()
+    summary = sc.get("post_summary") or sc.get("summary") or sc.get("message") or ""
+    turns = transcript_from_sc(sc)
+    text = transcript_text(turns)
+    reached = status == "COMPLETED" and any(t.get("speaker") != "bot" for t in turns)
+    if kind == "official":
+        return {
+            "reached": reached,
+            "summary": summary,
+            "confirmed_business": derive_confirmed(f"{summary} {text}"),
+            "transcript": turns,
+        }
+    return {
+        "reached": reached,
+        "summary": summary,
+        "red_flags": detect_red_flags(f"{summary} {text}"),
+        "transcript": turns,
+    }
+
+
 DRY_RUN_FIXTURES = {
     "official": {
         "reached": True,
@@ -245,16 +340,23 @@ DRY_RUN_FIXTURES = {
 }
 
 
-def run_fly(kind: str, number: str, org_name: str, region: str, suspect_number: str, live: bool) -> dict:
-    if not live:
+def run_fly(kind: str, number: str, org_name: str, region: str, suspect_number: str, backend: str) -> dict:
+    if backend == "dry":
         fixture = dict(DRY_RUN_FIXTURES[kind])
         fixture["number_called"] = number
         return fixture
 
     schema = OFFICIAL_FLY_SCHEMA if kind == "official" else SUSPECT_FLY_SCHEMA
     task = build_task(kind, org_name, number, suspect_number)
-    raw = create_and_wait(task, number, region, schema)
-    parsed = parse_live_result(raw, kind)
+
+    if backend == "rest":
+        parsed = parse_live_result(create_and_wait(task, number, region, schema), kind)
+    elif backend == "cli":
+        run_id, sc = cli_call_start(task, number, region)
+        parsed = parse_cli_result(poll_cli(run_id, sc), kind)
+    else:
+        raise ValueError(f"unknown backend: {backend}")
+
     parsed["number_called"] = number
     return parsed
 
@@ -359,16 +461,21 @@ def parse_args(argv):
     p.add_argument("--official", help="Override the official number from the whitelist.")
     p.add_argument("--whitelist", default=str(WHITELIST_PATH), help="Path to orgs.whitelist.json.")
     p.add_argument("--out", default=None, help="Write the attestation to this path instead of the default results dir.")
-    p.add_argument("--live", action="store_true", help="Place real CALL-E calls (side effects).")
+    p.add_argument("--backend", choices=["dry", "cli", "rest"], default="dry",
+                   help="dry-run (default) or live transport (cli / rest).")
+    p.add_argument("--live", action="store_true", help="Place real calls; implies --backend cli unless set.")
     return p.parse_args(argv)
 
 
 def main(argv=None) -> int:
     args = parse_args(argv)
 
+    if args.live and args.backend == "dry":
+        args.backend = "cli"
+
     if args.live:
-        if not CALLE_API_KEY:
-            print("--live requires CALLE_API_KEY in the environment.", file=sys.stderr)
+        if args.backend == "rest" and not CALLE_API_KEY:
+            print("--live --backend rest requires CALLE_API_KEY in the environment.", file=sys.stderr)
             return 2
         print("LIVE MODE: this will place real outbound phone calls.", file=sys.stderr)
 
@@ -384,8 +491,8 @@ def main(argv=None) -> int:
         )
         return 2
 
-    official = run_fly("official", official_number, org_name, args.region, args.number, args.live)
-    suspect = run_fly("suspect", args.number, org_name, args.region, args.number, args.live)
+    official = run_fly("official", official_number, org_name, args.region, args.number, args.backend)
+    suspect = run_fly("suspect", args.number, org_name, args.region, args.number, args.backend)
 
     verdict = build_verdict(official, suspect, args.number, official_number)
     attestation = build_attestation(org_name, official_number, official, suspect, verdict)

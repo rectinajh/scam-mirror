@@ -21,13 +21,21 @@ python3 scripts/run_dual_fly.py \
   --official "+1 800 555 0100"
 ```
 
-## Live run
+## Live run (CLI)
+
+Install the CLI and authorize once:
 
 ```bash
-cp .env.example .env
-# set CALLE_API_KEY in .env
-set -a; . ./.env; set +a
+cd scripts
+npm install
+./node_modules/.bin/calle auth login   # opens a browser; approve once
+./node_modules/.bin/calle mcp tools
+cd ..
+```
 
+Then run the dual-fly flow:
+
+```bash
 python3 scripts/run_dual_fly.py \
   --number "<real E.164 suspect number>" \
   --org "Example Bank" \
@@ -35,8 +43,10 @@ python3 scripts/run_dual_fly.py \
   --live
 ```
 
-`--live` places two real outbound calls. Replace the whitelist placeholder with
-a real published official line first.
+`--live` plans and starts two real outbound calls through the CALL-E CLI
+(`--backend cli`). Use `--backend rest` with `CALLE_API_KEY` for the Developer
+API path. Replace the whitelist placeholder with a real published official line
+first.
 
 ## Sample output (abbreviated)
 
@@ -63,4 +73,3 @@ a real published official line first.
   }
 }
 ```
-

@@ -114,31 +114,41 @@ This prints a full attestation and writes it to
 `verdict: likely_scam` because the suspect fly detects
 `asks_for_otp` and `demands_secrecy`.
 
-## Live CALL-E setup
+## Live CALL-E setup (CLI)
 
-1. Create a CALL-E account and API key at
-   <https://dashboard.heycall-e.com/account/api-keys> (new users get 20 free
-   calls).
-2. Copy the env template and fill in the key:
+1. Install the pinned CALL-E CLI and authorize once with your browser:
 
    ```bash
-   cp skills/scam-mirror/.env.example skills/scam-mirror/.env
-   # edit skills/scam-mirror/.env and set CALLE_API_KEY
-   set -a; . ./skills/scam-mirror/.env; set +a
+   cd skills/scam-mirror/scripts
+   npm install
+   ./node_modules/.bin/calle auth login
+   ```
+
+   `auth login` prints a one-time authorization URL. Open it, approve, and the
+   CLI caches your token locally.
+
+2. Verify the integration:
+
+   ```bash
+   ./node_modules/.bin/calle auth status
+   ./node_modules/.bin/calle mcp tools
    ```
 
 3. Replace the fictional official numbers in `orgs.whitelist.json` with real,
-   published hotlines, then run:
+   published hotlines, then run the dual-fly flow:
 
    ```bash
+   cd ../..
    python3 skills/scam-mirror/scripts/run_dual_fly.py \
      --number "<E.164 suspect number>" \
      --org "Example Bank" \
      --live
    ```
 
-`--live` places real outbound phone calls. Only use it for a verification you
-personally initiated.
+`--live` uses the CALL-E CLI (`--backend cli`) by default. A REST Developer API
+path is also available with `--backend rest` plus `CALLE_API_KEY` (see
+`.env.example`). Real calls are side effects; only run them for a verification
+you personally initiated.
 
 ## Official number configuration
 
